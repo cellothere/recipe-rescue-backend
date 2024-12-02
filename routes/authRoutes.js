@@ -9,6 +9,6 @@ router.route('/login')
 
 // Secured route for logout
 router.route('/logout')
-    .post(verifyJWT, authController.logout); // Add middleware here
+    .post(authController.logout); // Add middleware here
 
 module.exports = router;

@@ -1,6 +1,7 @@
 const express = require('express');
 const { OpenAI } = require('openai');
 const Recipe = require('../models/Recipe');
+const verifyJWT = require('../middleware/verifyJWT');
 
 const router = express.Router();
 
@@ -8,7 +9,6 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY, // Set your API key here
 });
 
-// Generate recipe
 // Generate recipe
 router.post('/generate', async (req, res) => {
   try {
@@ -112,17 +112,79 @@ router.post('/updateServings', async (req, res) => {
   }
 });
 
-
-// Save recipe
+// Save or create recipe
 router.post('/save', async (req, res) => {
   try {
-    const { name, ingredients, instructions } = req.body;
-    const recipe = new Recipe({ name, ingredients, instructions });
-    await recipe.save();
-    res.json({ message: 'Recipe saved successfully!' });
+    const { name, ingredients, instructions, userId } = req.body;
+
+    if (!name || !ingredients || !instructions || !userId) {
+      return res.status(400).json({ error: 'Recipe name, ingredients, instructions, and user ID are required.' });
+    }
+
+    // Find recipe with exact match on name and ingredients
+    let recipe = await Recipe.findOne({ 
+      name: name.trim(), 
+      ingredients: { $size: ingredients.length, $all: ingredients.map(ing => ing.trim()) }
+    });
+
+    if (recipe) {
+      // Recipe exists, add user to savedBy if not already there
+      if (!recipe.savedBy.includes(userId)) {
+        recipe.savedBy.push(userId);
+        await recipe.save();
+        return res.json({ message: 'User added to existing recipe successfully!' });
+      } else {
+        return res.json({ message: 'Recipe already saved by this user.' });
+      }
+    } else {
+      // Recipe doesn't exist, create new recipe
+      recipe = new Recipe({
+        name: name.trim(),
+        ingredients: ingredients.map(ing => ing.trim()),
+        instructions: instructions.trim(),
+        savedBy: [userId],
+      });
+      await recipe.save();
+      return res.status(201).json({ message: 'Recipe created and saved successfully!', recipe });
+    }
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
+
+// Update user in recipe
+router.patch('/:id/add-user', async (req, res) => {
+  try {
+    const { userId } = req.body; // User ID from the request body
+    const { id } = req.params;  // Recipe MongoDB ObjectID from URL
+
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+
+    const recipe = await Recipe.findById(id); // Find recipe by ObjectID
+
+    if (!recipe) {
+      return res.status(404).json({ error: 'Recipe not found' });
+    }
+
+    // Ensure savedBy is an array
+    if (!Array.isArray(recipe.savedBy)) {
+      recipe.savedBy = [];
+    }
+
+    if (!recipe.savedBy.includes(userId)) {
+      recipe.savedBy.push(userId); // Add user ID if not already saved
+      await recipe.save();
+    }
+
+    res.json({ message: 'User added to recipe successfully!' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 
 module.exports = router;
