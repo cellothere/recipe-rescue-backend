@@ -1,15 +1,14 @@
-const express = require('express')
-const router = express.Router()
-const authController = require('../controllers/authController')
-const loginLimiter = require('../middleware/loginLimiter')
+const express = require('express');
+const router = express.Router();
+const authController = require('../controllers/authController');
+const verifyJWT = require('../middleware/verifyJWT'); // Import the middleware
 
-router.route('/')
-    .post(loginLimiter, authController.login)
+// Public route for login
+router.route('/login')
+    .post(authController.login);
 
-router.route('/refresh')
-    .get(authController.refresh)
-
+// Secured route for logout
 router.route('/logout')
-    .post(authController.logout)
+    .post(verifyJWT, authController.logout); // Add middleware here
 
-module.exports = router
+module.exports = router;
