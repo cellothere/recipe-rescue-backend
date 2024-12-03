@@ -18,4 +18,14 @@ router.route('/username/:username')
 router.route('/:userid/recipes')
     .get(userController.getUserRecipes); // GET user ID by username
 
+router.route('/:userid/kitchen')
+    .post(userController.createIngredient)
+    .get(userController.getUserIngredients)
+
+router.route('/:userid/kitchen/:ingredientId')
+    .delete(userController.deleteIngredient)
+    .patch(userController.updateIngredient)
+
+
+
 module.exports = router;

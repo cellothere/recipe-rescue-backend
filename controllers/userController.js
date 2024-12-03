@@ -128,8 +128,118 @@ const getUserIdByUsername = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 });
+
+const createIngredient = asyncHandler(async (req, res) => {
+    const { userid } = req.params; // Extract user ID from URL
+    const { name, amount, measurement } = req.body; // Ingredient details
+  
+    if (!name) {
+      return res.status(400).json({ message: 'Ingredient name is required.' });
+    }
+  
+    const newIngredient = { name, amount, measurement };
+  
+    try {
+      const user = await User.findById(userid);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found.' });
+      }
+  
+      user.kitchen.push(newIngredient);
+      await user.save();
+  
+      res.status(201).json({ message: 'Ingredient added successfully.', kitchen: user.kitchen });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Failed to add ingredient.' });
+    }
+  });
   
 
+  const deleteIngredient = asyncHandler(async (req, res) => {
+    const { userid, ingredientId } = req.params;
+  
+    try {
+      const user = await User.findById(userid);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found.' });
+      }
+  
+      const ingredientIndex = user.kitchen.findIndex(
+        (ingredient) => ingredient._id.toString() === ingredientId
+      );
+  
+      if (ingredientIndex === -1) {
+        return res.status(404).json({ message: 'Ingredient not found.' });
+      }
+  
+      user.kitchen.splice(ingredientIndex, 1);
+      await user.save();
+  
+      res.status(200).json({ message: 'Ingredient removed successfully.', kitchen: user.kitchen });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Failed to remove ingredient.' });
+    }
+  });
+  
+
+  const updateIngredient = asyncHandler(async (req, res) => {
+    const { userid, ingredientId } = req.params;
+    const { name, amount, measurement } = req.body;
+  
+    try {
+      const user = await User.findById(userid);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found.' });
+      }
+  
+      const ingredient = user.kitchen.find(
+        (ingredient) => ingredient._id.toString() === ingredientId
+      );
+  
+      if (!ingredient) {
+        return res.status(404).json({ message: 'Ingredient not found.' });
+      }
+  
+      // Update ingredient details
+      if (name) ingredient.name = name;
+      if (amount) ingredient.amount = amount;
+      if (measurement) ingredient.measurement = measurement;
+  
+      await user.save();
+  
+      res.status(200).json({ message: 'Ingredient updated successfully.', kitchen: user.kitchen });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Failed to update ingredient.' });
+    }
+  });
+
+  const getUserIngredients = asyncHandler(async (req, res) => {
+    const { userid } = req.params; // Extract user ID from the URL
+  
+    try {
+      // Find the user by ID
+      const user = await User.findById(userid).lean(); // Use .lean() for better performance if no modification is needed
+  
+      if (!user) {
+        return res.status(404).json({ message: 'User not found.' });
+      }
+  
+      res.status(200).json({ kitchen: user.kitchen }); // Return the kitchen ingredients as JSON
+    } catch (error) {
+      console.error('Error fetching ingredients:', error);
+      // Handle invalid MongoDB ObjectID error
+      if (error.kind === 'ObjectId') {
+        return res.status(400).json({ message: 'Invalid user ID format.' });
+      }
+      res.status(500).json({ message: 'Failed to fetch ingredients.' });
+    }
+  });
+  
+  
+  
 module.exports = {
     getAllUsers,
     createUser,
@@ -137,5 +247,9 @@ module.exports = {
     updateUser,
     deleteUser,
     getUserIdByUsername,
-    getUserRecipes
+    getUserRecipes,
+    createIngredient,
+    deleteIngredient,
+    updateIngredient,
+    getUserIngredients
 };
