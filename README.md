@@ -19,8 +19,7 @@ npm install
 🗂 Environment Variables
 Create a .env file in the root of the project with the following keys:
 
-plaintext
-Copy code
+
 MONGODB_URI=your_mongodb_connection_string
 ACCESS_TOKEN_SECRET=your_access_token_secret
 REFRESH_TOKEN_SECRET=your_refresh_token_secret
@@ -73,8 +72,7 @@ GET /api/users/:userId/recipes: Get all saved recipes for a user.
 PATCH /api/recipes/:recipeId/remove-user: Remove a user from a saved recipe.
 
 📁 Project Structure
-plaintext
-Copy code
+
 .
 ├── controllers/                # Controller logic for handling API requests
 ├── middleware/                 # Custom middleware (e.g., JWT verification)
@@ -84,6 +82,7 @@ Copy code
 ├── .env.example                # Example environment variables file
 ├── server.js                   # Server entry point
 └── README.md                   # Documentation
+
 🔧 Common Issues
 MongoDB Connection Fails
 Ensure your MONGODB_URI in .env is correct.
