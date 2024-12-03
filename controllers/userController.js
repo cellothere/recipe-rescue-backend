@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const asyncHandler = require('express-async-handler');
+const Recipe = require('../models/Recipe');
 
 // @desc Get all users
 // @route GET /api/users
@@ -86,10 +87,55 @@ const deleteUser = asyncHandler(async (req, res) => {
     res.json({ message: `User ${result.username} deleted` });
 });
 
+// Get a user ID by username
+const getUserIdByUsername = async (req, res) => {
+    try {
+      const { username } = req.params;
+  
+      if (!username) {
+        return res.status(400).json({ error: 'Username is required.' });
+      }
+  
+      const user = await User.findOne({ username });
+  
+      if (!user) {
+        return res.status(404).json({ error: 'User not found.' });
+      }
+  
+      res.json({ userId: user._id });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  };
+
+  const getUserRecipes = asyncHandler(async (req, res) => {
+    const { userid } = req.params;
+
+    if (!userid) {
+        return res.status(400).json({ message: 'User ID is required.' });
+    }
+
+    try {
+        // Find recipes where the user ID is in the `savedBy` array
+        const recipes = await Recipe.find({ savedBy: userid }).lean();
+
+        if (!recipes || recipes.length === 0) {
+            return res.status(404).json({ message: 'No recipes found for this user.' });
+        }
+
+        res.json(recipes);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+  
+
 module.exports = {
     getAllUsers,
     createUser,
     getUserById,
     updateUser,
-    deleteUser
+    deleteUser,
+    getUserIdByUsername,
+    getUserRecipes
 };

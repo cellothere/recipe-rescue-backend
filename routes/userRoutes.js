@@ -12,4 +12,10 @@ router.route('/:id')
     .patch(userController.updateUser) // PATCH update a user by ID
     .delete(userController.deleteUser) // DELETE a user by ID
 
+router.route('/username/:username')
+    .get(userController.getUserIdByUsername); // GET user ID by username
+
+router.route('/:userid/recipes')
+    .get(userController.getUserRecipes); // GET user ID by username
+
 module.exports = router;
