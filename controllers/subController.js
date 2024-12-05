@@ -25,7 +25,7 @@ const generateSubstitute = asyncHandler(async (req, res) => {
       model: 'gpt-4o-mini',
       messages: [
         { role: "system", content: "You are a helpful assistant that provides ingredient substitutions." },
-        { role: "user", content: `Provide 5 unique substitutes for this ingredient: ${ingredient}. ${allergyNotice} ${alreadyUsedNotice} Your answer should only include the substitute names and measurements (if applicable), and no other words or text. Substitutes should be listed using a numerical list 1. 2. 3. 4. 5.` },
+        { role: "user", content: `Provide 5 unique substitutes for this ingredient: ${ingredient}. ${allergyNotice} ${alreadyUsedNotice} Your answer should only include the substitute names, and no other words or text. Substitutes should be listed using a numerical list 1. 2. 3. 4. 5. Please list the most logical and commonly used substitutions.` },
       ],
       max_tokens: 50,
     });
