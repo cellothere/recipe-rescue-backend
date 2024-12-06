@@ -42,31 +42,53 @@ const generateRecipe = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: 'Ingredients are required and must be an array.' });
   }
 
-  const allergyNotice = allergies.length > 0 
+  const allergyNotice = allergies.length > 0
     ? `Avoid using these allergens: ${allergies.join(', ')}.` 
     : '';
   const servingsNotice = servings 
     ? `The recipe should be enough for ${servings} people.` 
     : '';
 
-  const response = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages: [
-      { role: "system", content: "You are a helpful assistant that generates recipes." },
+  try {
+    const thread = await openai.beta.threads.create();
+    console.log('Thread created:', thread);
+
+    const message = await openai.beta.threads.messages.create(
+      thread.id,
       {
         role: "user",
-        content: `Create a recipe using these ingredients: ${ingredients.join(', ')}. ${allergyNotice} ${servingsNotice} Do not give an introduction paragraph. Just the title, ingredients, and instructions. Give numbered instructions: 1. 2. 3. etc.`,
-      },
-    ],
-  });
+        content: `Create a recipe using these ingredients: ${ingredients.join(', ')}. ${allergyNotice} ${servingsNotice} Do not give an introduction paragraph. Just the title, ingredients, and instructions. Give numbered instructions: 1. 2. 3. etc.`
+      }
+    );
 
-  const recipe = response.choices[0]?.message?.content?.trim();
-  if (!recipe) {
-    return res.status(500).json({ message: 'Failed to generate a recipe.' });
+    const run = await openai.beta.threads.runs.createAndPoll(
+      thread.id,
+      { 
+        assistant_id: process.env.OPENAI_ASST_KEY,
+        instructions: "Please be concise."
+      }
+    );
+
+    let recipe = '';
+
+    if (run.status === 'completed') {
+      const messages = await openai.beta.threads.messages.list(
+        run.thread_id
+      );
+      for (const message of messages.data.reverse()) {
+        recipe = `${message.role} > ${message.content[0].text.value}`;
+      }
+    } else {
+      console.log(run.status);
+    }
+
+    res.json({ recipe });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred while generating the recipe.' });
   }
-
-  res.json({ recipe });
 });
+
 
 // @desc Save or create a recipe
 // @route POST /api/recipes/save
