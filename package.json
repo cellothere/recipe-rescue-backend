@@ -9,6 +9,9 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "resolutions": {
+    "node-fetch": "^3.3.2"
+  },
   "dependencies": {
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
@@ -21,7 +24,9 @@
     "express-rate-limit": "^7.4.1",
     "express-validator": "^7.2.0",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.8.2",
-    "openai": "^4.76.0"
+    "mongodb": "^6.11.0",
+    "mongoose": "^8.8.4",
+    "openai": "^4.76.0",
+    "undici": "^7.1.0"
   }
 }

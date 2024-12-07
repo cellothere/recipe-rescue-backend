@@ -57,7 +57,8 @@ const generateRecipe = asyncHandler(async (req, res) => {
       thread.id,
       {
         role: "user",
-        content: `Create a recipe using these ingredients: ${ingredients.join(', ')}. ${allergyNotice} ${servingsNotice} Do not give an introduction paragraph. Just the title, ingredients, and instructions. Give numbered instructions: 1. 2. 3. etc.`
+        content: `Create a recipe using these ingredients: ${ingredients.join(', ')}. ${allergyNotice} ${servingsNotice} Do not give an introduction paragraph. Just the title, ingredients, and instructions. Give numbered instructions: 1. 2. 3. etc.
+        If the user presents an unrelated question or uses ingredients that are unsafe or unedible, please respond with "No Recipes Found."`
       }
     );
 
