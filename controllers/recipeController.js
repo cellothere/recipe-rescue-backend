@@ -65,7 +65,7 @@ const generateRecipe = asyncHandler(async (req, res) => {
     const run = await openai.beta.threads.runs.createAndPoll(
       thread.id,
       { 
-        assistant_id: process.env.OPENAI_ASST_KEY,
+        assistant_id: process.env.OPENAI_GEN_ASST_KEY,
         instructions: "Please be concise."
       }
     );

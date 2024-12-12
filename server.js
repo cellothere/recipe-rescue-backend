@@ -7,6 +7,7 @@ const recipeRoutes = require('./routes/recipeRoutes');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const subRoutes = require('./routes/subRoutes')
+const newRecipeRoutes = require('./routes/newRecipeRoutes')
 const app = express();
 app.use(cors());
 
@@ -16,6 +17,7 @@ app.use('/api/recipes', recipeRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/substitute', subRoutes);
+app.use('/api/newRecipe', newRecipeRoutes);
 
 
 mongoose.connect(process.env.MONGODB_URI)
